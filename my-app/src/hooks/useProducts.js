@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const useProducts = () => {
 
@@ -15,7 +16,7 @@ const useProducts = () => {
         try {
             setLoading(true);
             setError(null);
-            const res = await fetch("http://localhost:5000/api/products");
+            const res = await fetch(`${API_URL}/api/products`);
             if (!res.ok) throw new Error("request failed");
             const data = await res.json();
             setProducts(data.data || []);
@@ -34,7 +35,7 @@ const useProducts = () => {
     //add products
     const addProducts = async (formData) => {
         try {
-            const res = await fetch("http://localhost:5000/api/products", {
+            const res = await fetch(`${API_URL}/api/products`, {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -54,7 +55,7 @@ const useProducts = () => {
     // delete products
     const handleDelete = async (id) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+            const res = await fetch(`${API_URL}/api/products/${id}`, {
                 method: 'DELETE'
             });
             if (!res.ok) throw new Error('Delete failed');
@@ -90,7 +91,7 @@ const useProducts = () => {
     // update
     const updateProduct = async (id) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+            const res = await fetch(`${API_URL}/api/products/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editData)

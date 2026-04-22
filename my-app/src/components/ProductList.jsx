@@ -1,5 +1,5 @@
 import ProductCard from "./ProductCard";
-import ProductForm from "./ProductFrom";
+import ProductForm from "./ProductForm";
 import useProducts from "../hooks/useProducts";
 
 const ProductList = () => {

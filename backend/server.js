@@ -1,9 +1,10 @@
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors')
 const connectDB = require('./db');
 const productRoutes = require('./routes/productRoutes');
-const errorHandler = require("./middleware/errorHandler")
-const cors = require('cors')
+const errorHandler = require("./middleware/errorHandler");
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use((req, res, next) => {
 connectDB();
 
 app.use('/api/products', productRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use((req, res, next) => {
     res.status(404).json({
