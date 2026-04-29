@@ -1,21 +1,31 @@
 
-import './App.css'
-import ProductList from './components/ProductList'
-
-
-// const products = [
-//   { id: 1, name: 'Laptop', price: 45000, category: 'electronics', stock: 10 },
-//   { id: 2, name: 'Shirt', price: 399, category: 'clothing', stock: 50 },
-//   { id: 3, name: 'Rice', price: 120, category: 'food', stock: 200 },
-//   { id: 4, name: 'Phone', price: 25000, category: 'electronics', stock: 15 },
-//   { id: 5, name: 'Pant', price: 799, category: 'clothing', stock: 30 },
-// ];
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import ProductsPage from './pages/ProductsPage';
 
 const App = () => {
-  return (
-    <>
-      <ProductList/>
-    </>)
-}
+    return (
+        <BrowserRouter>
+            <AuthProvider>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route
+                        path="/products"
+                        element={
+                            <ProtectedRoute>
+                                <ProductsPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route path="/" element={<Navigate to="/products" replace />} />
+                </Routes>
+            </AuthProvider>
+        </BrowserRouter>
+    );
+};
 
-export default App
+export default App;

@@ -1,28 +1,22 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { apiRequest } from '../utils/api';
 
-const LoginPage = () => {
-    const { login } = useAuth();
-    const navigate = useNavigate();
+const useProducts = () => {
+    const { accessToken } = useAuth();
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [editingId, setEditingId] = useState(null);
+    const [editData, setEditData] = useState({});
 
-    const [formData, setFormData] = useState({ email: '', password: '' });
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-
+    const fetchProducts = async () => {
         try {
-            await login(formData.email, formData.password);
-            navigate('/products');
+            setLoading(true);
+            setError(null);
+            const data = await apiRequest('/products');
+            setProducts(data.data || []);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -30,34 +24,80 @@ const LoginPage = () => {
         }
     };
 
-    return (
-        <div>
-            <h1>Login</h1>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <input
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="Email"
-                    required
-                />
-                <input
-                    name="password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Password"
-                    required
-                />
-                <button type="submit" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'}
-                </button>
-            </form>
-            <p>No account? <Link to="/register">Register</Link></p>
-        </div>
-    );
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const addProduct = async (formData) => {
+        try {
+            const data = await apiRequest(
+                '/products',
+                { method: 'POST', body: JSON.stringify(formData) },
+                accessToken  // pass token
+            );
+            setProducts(prev => [...prev, data.data]);
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const deleteProduct = async (id) => {
+        try {
+            await apiRequest(
+                `/products/${id}`,
+                { method: 'DELETE' },
+                accessToken
+            );
+            setProducts(prev => prev.filter(p => p._id !== id));
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    const startEdit = (product) => {
+        setEditingId(product._id);
+        setEditData({
+            name: product.name,
+            price: product.price,
+            category: product.category,
+            stock: product.stock
+        });
+    };
+
+    const handleEditChange = (e) => {
+        const { name, value } = e.target;
+        setEditData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+        setEditData({});
+    };
+
+    const updateProduct = async (id) => {
+        try {
+            const data = await apiRequest(
+                `/products/${id}`,
+                { method: 'PUT', body: JSON.stringify(editData) },
+                accessToken
+            );
+            setProducts(prev =>
+                prev.map(p => p._id === id ? data.data : p)
+            );
+            setEditingId(null);
+            setEditData({});
+        } catch (err) {
+            alert(err.message);
+        }
+    };
+
+    return {
+        products, loading, error,
+        editingId, editData,
+        addProduct, deleteProduct,
+        startEdit, handleEditChange,
+        cancelEdit, updateProduct
+    };
 };
 
-export default LoginPage;
+export default useProducts;
